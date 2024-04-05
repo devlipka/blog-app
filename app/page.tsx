@@ -1,9 +1,12 @@
-import Link from "next/link";
+import PaddingContainer from "@/components/layout/padding-container";
+import PostCard from "@/components/post/post-card";
+import { DUMMY_POSTS } from "@/DUMMY_DATA";
 
 export default function Home() {
   return (
-    <main className="h-[900px]">
-      <h1>Home</h1>
-    </main>
+    <PaddingContainer>
+      <main className="h-auto space-y-10"></main>
+      <PostCard post={DUMMY_POSTS[0]} />
+    </PaddingContainer>
   );
 }
