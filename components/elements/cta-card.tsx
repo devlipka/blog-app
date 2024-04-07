@@ -20,13 +20,13 @@ function CTACard() {
           the world Explore the world Explore the world Explore the world
           Explore the world Explore the world
         </p>
-        <form action="" className="flex items-center gap-2 mt-6">
+        <form action="" className="flex items-center w-full gap-2 mt-6">
           <input
             type="text"
-            className="bg-white/80 text-base rounded-md px-3 py-3 placeholder:text-sm outline-none focus:ring-2 ring-neutral-600 "
+            className="w-full bg-white/80 text-base rounded-md px-3 py-3 placeholder:text-sm outline-none md:w-auto focus:ring-2 ring-neutral-600 "
             placeholder="Write your email"
           />
-          <button className="bg-neutral-900 rounded-md text-neutral-200 px-3 py-2">
+          <button className="bg-neutral-900 whitespace-nowrap rounded-md text-neutral-200 px-3 py-2">
             Sign Up
           </button>
         </form>

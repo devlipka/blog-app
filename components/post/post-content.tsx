@@ -4,12 +4,17 @@ import { getReadingTime, getRelativeDate } from "@/lib/helpers";
 
 interface PostContentProps {
   post: Post;
+  isPostPage?: boolean;
 }
 
-function PostContent({ post }: PostContentProps) {
+function PostContent({ post, isPostPage = false }: PostContentProps) {
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2 text-sm text-neutral-400">
+      <div
+        className={`flex flex-wrap items-center gap-2 text-neutral-400 ${
+          isPostPage ? "text-sm" : "text-xs @md:text-sm"
+        }`}
+      >
         <div
           className={`font-medium ${
             post.category.title === "Cities"
@@ -26,11 +31,23 @@ function PostContent({ post }: PostContentProps) {
         <div className="w-2 h-2 rounded-full bg-neutral-200" />
         <div>{getRelativeDate(post.date_created)}</div>
       </div>
-      <h2 className="font-medium text-3xl">{post.title}</h2>
-      <p className="leading-snug text-neutral-600">{post.description}</p>
-      <div className="flex items-center gap-2 pt-2">
-        Read More <ArrowRight size="14" />
-      </div>
+      <h2
+        className={`${
+          isPostPage
+            ? "text-2xl md:text-3xl lg:text-4xl font-bold"
+            : "@lg:text-3xl text-xl @md:text-2xl font-medium"
+        }`}
+      >
+        {post.title}
+      </h2>
+      <p className="text-base @lg:text-lg leading-snug text-neutral-600">
+        {post.description}
+      </p>
+      {!isPostPage && (
+        <div className="flex items-center gap-2 pt-2">
+          Read More <ArrowRight size="14" />
+        </div>
+      )}
     </div>
   );
 }

@@ -9,12 +9,13 @@ import {
 } from "lucide-react";
 import React from "react";
 
-interface ISocialLink {
+interface SocialLinkProps {
   link: string;
   platform: string;
+  isShareUrl?: boolean;
 }
 
-function SocialLink({ platform, link }) {
+function SocialLink({ platform, link, isShareUrl = false }: SocialLinkProps) {
   const getIcon = (platform: string) => {
     switch (platform) {
       case "facebook":
@@ -32,7 +33,19 @@ function SocialLink({ platform, link }) {
     }
   };
 
-  return <Link href={link}>{getIcon(platform)}</Link>;
+  return (
+    <Link href={link}>
+      <div
+        className={`${
+          isShareUrl
+            ? "py-2 px-3 bg-neutral-600 rounded-md hover:bg-neutral-800 hover:text-neutral-100 duration-100 ease-in-out transition-colors"
+            : ""
+        }`}
+      >
+        {getIcon(platform)}
+      </div>
+    </Link>
+  );
 }
 
 export default SocialLink;
