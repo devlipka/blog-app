@@ -1,5 +1,33 @@
 import Image from "next/image";
-function CTACard() {
+import { directus } from "@/lib/directus";
+import { createItem } from "@directus/sdk";
+import { revalidateTag } from "next/cache";
+
+async function CTACard() {
+  const formAction = async (formData: FormData) => {
+    "use server";
+    try {
+      const email = formData.get("email");
+
+      await directus.request(createItem("subscribers", { email }));
+      revalidateTag("subscribers-count");
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const subscribersCount = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}items/subscribers?meta=total_count&access_token=${process.env.ADMIN_TOKEN}`,
+    {
+      next: {
+        tags: ["subscribers-count"],
+      },
+    },
+  )
+    .then((res) => res.json())
+    .then((res) => res.meta.total_count)
+    .catch((error) => console.error(error));
+
   return (
     <div className="rounded-md bg-slate-100 px-6 py-10 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-white/95 via-white/70 to-white/30 z-10" />
@@ -20,9 +48,14 @@ function CTACard() {
           the world Explore the world Explore the world Explore the world
           Explore the world Explore the world
         </p>
-        <form action="" className="flex items-center w-full gap-2 mt-6">
+        <form
+          key={subscribersCount + "subscribers-form"}
+          action={formAction}
+          className="flex items-center w-full gap-2 mt-6"
+        >
           <input
             type="text"
+            name="email"
             className="w-full bg-white/80 text-base rounded-md px-3 py-3 placeholder:text-sm outline-none md:w-auto focus:ring-2 ring-neutral-600 "
             placeholder="Write your email"
           />
@@ -30,6 +63,14 @@ function CTACard() {
             Sign Up
           </button>
         </form>
+
+        <div className="mt-5 text-neutral-700">
+          Join our{" "}
+          <span className="bg-neutral-700 rounded-md text-neutral-100 py-1 px-2 text-sm">
+            {subscribersCount}
+          </span>{" "}
+          subscribers now!
+        </div>
       </div>
     </div>
   );

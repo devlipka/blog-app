@@ -24,7 +24,7 @@ function PostCard({ post, layout = "horizontal", reverse = false }: PostProps) {
           reverse ? "md:order-last" : ""
         }`}
         alt={post.title}
-        src={post.image}
+        src={`${process.env.NEXT_PUBLIC_ASSETS_URL}${post.image}?key=optimised`}
         width={600}
         height={300}
       />

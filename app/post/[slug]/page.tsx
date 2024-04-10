@@ -1,29 +1,80 @@
-import { DUMMY_POSTS } from "@/DUMMY_DATA";
 import { notFound } from "next/navigation";
 import PaddingContainer from "@/components/layout/padding-container";
 import PostHero from "@/components/post/post-hero";
 import SocialLink from "@/components/elements/social-link";
 import PostBody from "@/components/post/post-body";
 import CTACard from "@/components/elements/cta-card";
+import { directus } from "@/lib/directus";
+import { readItems } from "@directus/sdk";
+import { Post } from "@/types/collection";
 export const generateStaticParams = async () => {
-  return DUMMY_POSTS.map((post) => {
-    return {
-      slug: post.slug,
-    };
-  });
+  try {
+    const posts = await directus.request(
+      readItems("post", {
+        filter: {
+          status: {
+            _eq: "published",
+          },
+          fields: ["slug"],
+        },
+      }),
+    );
+
+    const params = posts?.map((post) => {
+      return {
+        slug: post.slug as string,
+      };
+    });
+
+    return params || [];
+  } catch (error) {
+    console.error(error);
+
+    throw new Error(error);
+  }
 };
-const Page = ({
+
+const Page = async ({
   params,
 }: {
   params: {
     slug: string;
   };
 }) => {
-  const post = DUMMY_POSTS.find((post) => post.slug === params.slug);
+  const getPostData = async () => {
+    try {
+      const post = await directus.request(
+        readItems("post", {
+          filter: {
+            slug: {
+              _eq: params.slug,
+            },
+          },
+          fields: [
+            "*",
+            "category.id",
+            "category.title",
+            "author.id",
+            "author.first_name",
+            "author.last_name",
+          ],
+        }),
+      );
+
+      return post[0];
+    } catch (error) {
+      console.error(error);
+
+      throw new Error(error);
+    }
+  };
+
+  const post: Post = await getPostData();
 
   if (!post) {
     notFound();
   }
+
   return (
     <PaddingContainer>
       <div className="space-y-10">
