@@ -2,15 +2,18 @@ import siteConfig from "@/config/site";
 import PaddingContainer from "@/components/layout/padding-container";
 import Link from "next/link";
 import SocialLink from "@/components/elements/social-link";
+import { getDictionary } from "@/lib/getDictionary";
 
-function Footer() {
+async function Footer({ locale }: { locale: string }) {
+  const dictionary = await getDictionary(locale);
+
   return (
     <div className="py-6 mt-10 border-t">
       <PaddingContainer>
         <div>
           <h2 className="text-3xl font-bold">{siteConfig.siteName}</h2>
           <p className="max-w-md mt-2 text-lg text-neutral-700">
-            {siteConfig.description}
+            {dictionary.footer.description}
           </p>
         </div>
         {/*Social and Currently at*/}
@@ -41,7 +44,9 @@ function Footer() {
             </div>
           </div>
           <div>
-            <div className="text-sm text-neutral-400">Currently At</div>
+            <div className="text-sm text-neutral-400">
+              {dictionary.footer.currentlyAtText}
+            </div>
             <div className="bg-white px-3 py-2 shadow-md rounded-md flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
               {siteConfig.currentlyAt}
@@ -51,10 +56,10 @@ function Footer() {
         {/*Bottom section*/}
         <div className="border-t py-3 flex items-center gap-4 flex-wrap justify-between mt-16 border-t">
           <div className="text-sm text-neutral">
-            All rights are reserved | Copyright {new Date().getFullYear()}
+            {dictionary.footer.rightsText} {new Date().getFullYear()}
           </div>
           <div className="text-sm">
-            Made with love by{" "}
+            {dictionary.footer.creatorText}{" "}
             <Link href="/" className="underline underline-offset-4">
               @dev-lipka
             </Link>

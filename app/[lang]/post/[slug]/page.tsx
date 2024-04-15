@@ -23,10 +23,18 @@ export const generateStaticParams = async () => {
     const params = posts?.map((post) => {
       return {
         slug: post.slug as string,
+        lang: "en",
       };
     });
 
-    return params || [];
+    const localisedParams = posts?.map((post) => {
+      return {
+        slug: post.slug as string,
+        lang: "de",
+      };
+    });
+
+    return params?.concat(localisedParams ?? []) || [];
   } catch (error) {
     console.error(error);
 
@@ -39,6 +47,7 @@ const Page = async ({
 }: {
   params: {
     slug: string;
+    lang: string;
   };
 }) => {
   const getPostData = async () => {
@@ -57,11 +66,30 @@ const Page = async ({
             "author.id",
             "author.first_name",
             "author.last_name",
+            "translations.*",
+            "category.translations.*",
           ],
         }),
       );
 
-      return post[0];
+      const postData = post[0];
+
+      if (params.lang === "en") {
+        return postData;
+      } else {
+        const localisedPostData = {
+          ...postData,
+          title: postData?.translations?.[0]?.title,
+          description: postData?.translations?.[0]?.description,
+          body: postData?.translations?.[0]?.body,
+          category: {
+            ...postData,
+            title: postData?.category?.translations?.[0]?.title,
+          },
+        };
+
+        return localisedPostData;
+      }
     } catch (error) {
       console.error(error);
 
@@ -69,7 +97,7 @@ const Page = async ({
     }
   };
 
-  const post: Post = await getPostData();
+  const post: Post = (await getPostData()) as Post;
 
   if (!post) {
     notFound();
@@ -78,7 +106,7 @@ const Page = async ({
   return (
     <PaddingContainer>
       <div className="space-y-10">
-        <PostHero post={post} />
+        <PostHero post={post} locale={params.lang} />
         <div className="flex flex-col md:flex-row gap-10">
           <div className="relative">
             <div className="sticky top-20 flex items-center md:flex-col gap-5">
@@ -101,7 +129,7 @@ const Page = async ({
             </div>
           </div>
           <PostBody body={post.body} />
-          <CTACard />
+          <CTACard locale={params.lang} />
         </div>
       </div>
     </PaddingContainer>

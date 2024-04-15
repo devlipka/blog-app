@@ -8,8 +8,14 @@ interface PostProps {
   post: Post;
   layout?: "vertical" | "horizontal";
   reverse?: boolean;
+  locale: string;
 }
-function PostCard({ post, layout = "horizontal", reverse = false }: PostProps) {
+function PostCard({
+  post,
+  layout = "horizontal",
+  reverse = false,
+  locale,
+}: PostProps) {
   return (
     <Link
       className={`@container ${
@@ -28,7 +34,7 @@ function PostCard({ post, layout = "horizontal", reverse = false }: PostProps) {
         width={600}
         height={300}
       />
-      <PostContent post={post} />
+      <PostContent locale={locale} post={post} />
     </Link>
   );
 }

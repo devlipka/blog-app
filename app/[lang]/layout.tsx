@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/navigation/navigation";
 import Footer from "@/components/navigation/footer";
+import Head from "next/head";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -13,15 +14,23 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  params: { lang },
 }: Readonly<{
   children: React.ReactNode;
+  params: {
+    lang: string;
+  };
 }>) {
   return (
-    <html lang="en">
+    <html lang={lang}>
+      {/*TODO Move Head to Metadata*/}
+      <Head>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <body className={inter.className}>
-        <Navigation />
+        <Navigation locale={lang} />
         <div className="pt-10 min-h-[100vh]">{children}</div>
-        <Footer />
+        <Footer locale={lang} />
       </body>
     </html>
   );

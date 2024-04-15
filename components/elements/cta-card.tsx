@@ -2,8 +2,11 @@ import Image from "next/image";
 import { directus } from "@/lib/directus";
 import { createItem } from "@directus/sdk";
 import { revalidateTag } from "next/cache";
+import { getDictionary } from "@/lib/getDictionary";
 
-async function CTACard() {
+async function CTACard({ locale }: { locale: string }) {
+  const dictionary = await getDictionary(locale);
+
   const formAction = async (formData: FormData) => {
     "use server";
     try {
@@ -40,13 +43,10 @@ async function CTACard() {
       <div className="relative z-20">
         <div className="text-lg font-medium">#exploretheworld</div>
         <h3 className="text-4xl font-semibold mt-3">
-          Explore the world with me!
+          {dictionary.ctaCard.title}
         </h3>
         <p className="max-w-lg mt-2 text-lg">
-          Explore the world Explore the world Explore the world Explore the
-          world Explore the world Explore the world Explore the world Explore
-          the world Explore the world Explore the world Explore the world
-          Explore the world Explore the world
+          {dictionary.ctaCard.description}
         </p>
         <form
           key={subscribersCount + "subscribers-form"}
@@ -57,19 +57,19 @@ async function CTACard() {
             type="text"
             name="email"
             className="w-full bg-white/80 text-base rounded-md px-3 py-3 placeholder:text-sm outline-none md:w-auto focus:ring-2 ring-neutral-600 "
-            placeholder="Write your email"
+            placeholder={dictionary.ctaCard.placeholder}
           />
           <button className="bg-neutral-900 whitespace-nowrap rounded-md text-neutral-200 px-3 py-2">
-            Sign Up
+            {dictionary.ctaCard.button}
           </button>
         </form>
 
         <div className="mt-5 text-neutral-700">
-          Join our{" "}
+          {dictionary.ctaCard.subscriberText1}{" "}
           <span className="bg-neutral-700 rounded-md text-neutral-100 py-1 px-2 text-sm">
             {subscribersCount}
           </span>{" "}
-          subscribers now!
+          {dictionary.ctaCard.subscriberText2}
         </div>
       </div>
     </div>
