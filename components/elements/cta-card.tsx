@@ -1,35 +1,55 @@
+"use client";
+
 import Image from "next/image";
 import { directus } from "@/lib/directus";
 import { createItem } from "@directus/sdk";
 import { revalidateTag } from "next/cache";
 import { getDictionary } from "@/lib/getDictionary";
+import { FormEvent, useState } from "react";
 
-async function CTACard({ locale }: { locale: string }) {
-  const dictionary = await getDictionary(locale);
+function CTACard({ dictionary }: { dictionary: any }) {
+  // Server Action Approach
+  // const formAction = async (formData: FormData) => {
+  //   "use server";
+  //   try {
+  //     const email = formData.get("email");
+  //
+  //     await directus.request(createItem("subscribers", { email }));
+  //     revalidateTag("subscribers-count");
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
 
-  const formAction = async (formData: FormData) => {
-    "use server";
+  // const subscribersCount = await fetch(
+  //   `${process.env.NEXT_PUBLIC_API_URL}items/subscribers?meta=total_count&access_token=${process.env.ADMIN_TOKEN}`,
+  //   {
+  //     next: {
+  //       tags: ["subscribers-count"],
+  //     },
+  //   },
+  // )
+  //   .then((res) => res.json())
+  //   .then((res) => res.meta.total_count)
+  //   .catch((error) => console.error(error));
+
+  const [email, setEmail] = useState("");
+  const [isHandling, setIsHandling] = useState(false);
+
+  const submitHandler = async (e: FormEvent) => {
     try {
-      const email = formData.get("email");
+      e.preventDefault();
+      setIsHandling(true);
 
       await directus.request(createItem("subscribers", { email }));
-      revalidateTag("subscribers-count");
+
+      setIsHandling(false);
+      setEmail("");
     } catch (error) {
       console.error(error);
+      setIsHandling(false);
     }
   };
-
-  const subscribersCount = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}items/subscribers?meta=total_count&access_token=${process.env.ADMIN_TOKEN}`,
-    {
-      next: {
-        tags: ["subscribers-count"],
-      },
-    },
-  )
-    .then((res) => res.json())
-    .then((res) => res.meta.total_count)
-    .catch((error) => console.error(error));
 
   return (
     <div className="rounded-md bg-slate-100 px-6 py-10 relative overflow-hidden">
@@ -49,28 +69,34 @@ async function CTACard({ locale }: { locale: string }) {
           {dictionary.ctaCard.description}
         </p>
         <form
-          key={subscribersCount + "subscribers-form"}
-          action={formAction}
+          // key={subscribersCount + "subscribers-form"}
+          // action={formAction}
+          onSubmit={submitHandler}
           className="flex items-center w-full gap-2 mt-6"
         >
           <input
             type="text"
             name="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="w-full bg-white/80 text-base rounded-md px-3 py-3 placeholder:text-sm outline-none md:w-auto focus:ring-2 ring-neutral-600 "
             placeholder={dictionary.ctaCard.placeholder}
           />
-          <button className="bg-neutral-900 whitespace-nowrap rounded-md text-neutral-200 px-3 py-2">
-            {dictionary.ctaCard.button}
+          <button
+            disabled={isHandling}
+            className="bg-neutral-900 whitespace-nowrap rounded-md text-neutral-200 px-3 py-2"
+          >
+            {!isHandling ? dictionary.ctaCard.button : "Sending..."}
           </button>
         </form>
 
-        <div className="mt-5 text-neutral-700">
-          {dictionary.ctaCard.subscriberText1}{" "}
-          <span className="bg-neutral-700 rounded-md text-neutral-100 py-1 px-2 text-sm">
-            {subscribersCount}
-          </span>{" "}
-          {dictionary.ctaCard.subscriberText2}
-        </div>
+        {/*<div className="mt-5 text-neutral-700">*/}
+        {/*  {dictionary.ctaCard.subscriberText1}{" "}*/}
+        {/*  <span className="bg-neutral-700 rounded-md text-neutral-100 py-1 px-2 text-sm">*/}
+        {/*    {subscribersCount}*/}
+        {/*  </span>{" "}*/}
+        {/*  {dictionary.ctaCard.subscriberText2}*/}
+        {/*</div>*/}
       </div>
     </div>
   );

@@ -6,6 +6,48 @@ import { directus } from "@/lib/directus";
 import { readItems } from "@directus/sdk";
 import { notFound } from "next/navigation";
 import { Post } from "@/types/collection";
+import { getDictionary } from "@/lib/getDictionary";
+import { param } from "ts-interface-checker";
+
+export const getAllPosts = async (lang: string) => {
+  try {
+    const posts = await directus.request(
+      readItems("post", {
+        fields: [
+          "*",
+          "author.id",
+          "author.first_name",
+          "author.last_name",
+          "category.id",
+          "category.title",
+          "category.translations.*",
+          "translations.*",
+        ],
+      }),
+    );
+
+    if (lang === "en") {
+      return posts;
+    } else {
+      return posts?.map((post) => {
+        return {
+          ...post,
+          title: post.translations[0].title,
+          description: post.translations[0].description,
+          body: post.translations[0].body,
+          category: {
+            ...post.category,
+            title: post.category.translations[0].title,
+          },
+        };
+      });
+    }
+  } catch (error) {
+    console.error(error);
+
+    throw new Error(error);
+  }
+};
 
 export default async function Home({
   params: { lang },
@@ -14,51 +56,13 @@ export default async function Home({
     lang: string;
   };
 }) {
-  const getAllPosts = async () => {
-    try {
-      const posts = await directus.request(
-        readItems("post", {
-          fields: [
-            "*",
-            "author.id",
-            "author.first_name",
-            "author.last_name",
-            "category.id",
-            "category.title",
-            "category.translations.*",
-            "translations.*",
-          ],
-        }),
-      );
-
-      if (lang === "en") {
-        return posts;
-      } else {
-        return posts?.map((post) => {
-          return {
-            ...post,
-            title: post.translations[0].title,
-            description: post.translations[0].description,
-            body: post.translations[0].body,
-            category: {
-              ...post.category,
-              title: post.category.translations[0].title,
-            },
-          };
-        });
-      }
-    } catch (error) {
-      console.error(error);
-
-      throw new Error(error);
-    }
-  };
-
-  const posts = await getAllPosts();
+  const posts = await getAllPosts(lang);
 
   if (!posts) {
     notFound();
   }
+
+  const dictionary = await getDictionary(lang);
 
   return (
     <PaddingContainer>
@@ -68,7 +72,7 @@ export default async function Home({
           locale={lang}
           posts={posts.filter((_post, index) => index > 0 && index < 3)}
         />
-        <CTACard locale={lang} />
+        <CTACard dictionary={dictionary} />
         <PostCard locale={lang} reverse post={posts[3] as Post} />
 
         <PostList

@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
-import readingTime from "reading-time";
+// Such import fixed the issue with './stream'
+import readingTime from "reading-time/lib/reading-time";
 
 export const getReadingTime = (text: string, locale: string) => {
   const minutes = readingTime(text).minutes;

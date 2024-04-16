@@ -5,6 +5,8 @@ import { Post } from "@/types/collection";
 import { readItems } from "@directus/sdk";
 import { notFound } from "next/navigation";
 import { getParsedHTML } from "@/lib/parseHTML";
+import { cache } from "react";
+import siteConfig from "@/config/site";
 
 export const generateStaticParams = async () => {
   try {
@@ -40,24 +42,21 @@ export const generateStaticParams = async () => {
     throw new Error(error);
   }
 };
-const Page = async ({
-  params,
-}: {
-  params: { category: string; lang: string };
-}) => {
-  const getCategoryData = async () => {
+
+export const getCategoryData = cache(
+  async (categorySlug: string, locale: string) => {
     try {
       const category = await directus.request(
         readItems("category", {
           filter: {
             slug: {
-              _eq: params.category,
+              _eq: categorySlug,
             },
           },
           fields: [
             "*",
-            "posts.*",
             "translations.*",
+            "posts.*",
             "posts.author.id",
             "posts.author.first_name",
             "posts.author.last_name",
@@ -69,7 +68,7 @@ const Page = async ({
       );
       const fetchedCategory = category[0];
 
-      if (params.lang === "en") {
+      if (locale === "en") {
         return fetchedCategory;
       } else {
         return {
@@ -95,9 +94,55 @@ const Page = async ({
 
       throw new Error(error);
     }
-  };
+  },
+);
 
-  const category = await getCategoryData();
+export const generateMetadata = async ({
+  params: { category, lang },
+}: {
+  params: {
+    category: string;
+    lang: string;
+  };
+}) => {
+  const categoryData = await getCategoryData(category, lang);
+
+  return {
+    title: categoryData?.title,
+    description: categoryData?.description,
+    openGraph: {
+      title: categoryData?.title,
+      description: categoryData?.description,
+      url: `${process.env.NEXT_PUBLIC_SITE_URL}/${lang}/${category}`,
+      siteName: categoryData?.title,
+      images: [
+        {
+          url: `${process.env.NEXT_PUBLIC_SITE_URL}/${lang}/${category}/opengraph-image`,
+          width: 1200,
+          height: 628,
+        },
+      ],
+      locale: lang,
+      type: "website",
+    },
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/${category}`,
+      languages: {
+        en: `${process.env.NEXT_PUBLIC_SITE_URL}/en/${category}`,
+        de: `${process.env.NEXT_PUBLIC_SITE_URL}/de/${category}`,
+      },
+    },
+  };
+};
+
+const Page = async ({
+  params,
+}: {
+  params: { category: string; lang: string };
+}) => {
+  const locale = params.lang;
+  const categorySlug = params.category;
+  const category = await getCategoryData(categorySlug, locale);
 
   if (!category) {
     notFound();
