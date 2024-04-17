@@ -2,52 +2,10 @@ import PaddingContainer from "@/components/layout/padding-container";
 import PostCard from "@/components/post/post-card";
 import PostList from "@/components/post/post-list";
 import CTACard from "@/components/elements/cta-card";
-import { directus } from "@/lib/directus";
-import { readItems } from "@directus/sdk";
 import { notFound } from "next/navigation";
 import { Post } from "@/types/collection";
 import { getDictionary } from "@/lib/getDictionary";
-import { param } from "ts-interface-checker";
-
-export const getAllPosts = async (lang: string) => {
-  try {
-    const posts = await directus.request(
-      readItems("post", {
-        fields: [
-          "*",
-          "author.id",
-          "author.first_name",
-          "author.last_name",
-          "category.id",
-          "category.title",
-          "category.translations.*",
-          "translations.*",
-        ],
-      }),
-    );
-
-    if (lang === "en") {
-      return posts;
-    } else {
-      return posts?.map((post) => {
-        return {
-          ...post,
-          title: post.translations[0].title,
-          description: post.translations[0].description,
-          body: post.translations[0].body,
-          category: {
-            ...post.category,
-            title: post.category.translations[0].title,
-          },
-        };
-      });
-    }
-  } catch (error) {
-    console.error(error);
-
-    throw new Error(error);
-  }
-};
+import { getAllPosts } from "@/services/post.service";
 
 export default async function Home({
   params: { lang },

@@ -7,45 +7,14 @@ import Head from "next/head";
 import { getDictionary } from "@/lib/getDictionary";
 import siteConfig from "@/config/site";
 import Script from "next/script";
+import { generateMainMetadata } from "@/services/seo.service";
 
 const inter = Inter({ subsets: ["latin"] });
 export const generateMetadata = async ({
   params: { lang },
 }: {
   params: { lang: string };
-}) => {
-  const dictionary = await getDictionary(lang);
-
-  return {
-    title: {
-      template: "%s | " + siteConfig.siteName,
-      default: siteConfig.siteName,
-    },
-    description: dictionary.footer.description,
-    openGraph: {
-      title: siteConfig.siteName,
-      description: siteConfig.description,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/${lang}`,
-      siteName: siteConfig.siteName,
-      images: [
-        {
-          url: `${process.env.NEXT_PUBLIC_SITE_URL}/opengraph-image.png`,
-          width: 1200,
-          height: 628,
-        },
-      ],
-      locale: lang,
-      type: "website",
-    },
-    alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/${lang}`,
-      languages: {
-        en: `${process.env.NEXT_PUBLIC_SITE_URL}/en`,
-        de: `${process.env.NEXT_PUBLIC_SITE_URL}/de`,
-      },
-    },
-  };
-};
+}) => generateMainMetadata({ lang });
 
 export default function RootLayout({
   children,

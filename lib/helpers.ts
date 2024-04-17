@@ -1,5 +1,7 @@
 import { DateTime } from "luxon";
 // Such import fixed the issue with './stream'
+// TODO: get rid of ts-ignore
+//@ts-ignore
 import readingTime from "reading-time/lib/reading-time";
 
 export const getReadingTime = (text: string, locale: string) => {

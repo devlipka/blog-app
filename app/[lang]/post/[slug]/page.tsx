@@ -7,12 +7,17 @@ import CTACard from "@/components/elements/cta-card";
 import { directus } from "@/lib/directus";
 import { readItems } from "@directus/sdk";
 import { Post } from "@/types/collection";
-import { cache } from "react";
 import siteConfig from "@/config/site";
 import { getDictionary } from "@/lib/getDictionary";
-export const generateStaticParams = async () => {
+import { generatePostMetadata } from "@/services/seo.service";
+import { getPostData } from "@/services/post.service";
+
+// TODO: fix type
+export const generateStaticParams = async (): Promise<any[]> => {
   try {
     const posts = await directus.request(
+      // TODO: get rid of ts-ignore
+      //@ts-ignore
       readItems("post", {
         filter: {
           status: {
@@ -40,55 +45,9 @@ export const generateStaticParams = async () => {
     return params?.concat(localisedParams ?? []) || [];
   } catch (error) {
     console.error(error);
-
-    throw new Error(error);
+    return [];
   }
 };
-
-export const getPostData = cache(async (postSlug: string, locale: string) => {
-  try {
-    const post = await directus.request(
-      readItems("post", {
-        filter: {
-          slug: {
-            _eq: postSlug,
-          },
-        },
-        fields: [
-          "*",
-          "category.id",
-          "category.title",
-          "author.id",
-          "author.first_name",
-          "author.last_name",
-          "translations.*",
-          "category.translations.*",
-        ],
-      }),
-    );
-
-    const postData = post[0];
-
-    if (locale === "en") {
-      return postData;
-    } else {
-      return {
-        ...postData,
-        title: postData?.translations?.[0]?.title,
-        description: postData?.translations?.[0]?.description,
-        body: postData?.translations?.[0]?.body,
-        category: {
-          ...postData,
-          title: postData?.category?.translations?.[0]?.title,
-        },
-      };
-    }
-  } catch (error) {
-    console.error(error);
-
-    throw new Error(error);
-  }
-});
 
 export const generateMetadata = async ({
   params: { slug, lang },
@@ -97,36 +56,7 @@ export const generateMetadata = async ({
     slug: string;
     lang: string;
   };
-}) => {
-  const post = await getPostData(slug, lang);
-
-  return {
-    title: post?.title,
-    description: post?.description,
-    openGraph: {
-      title: post?.title,
-      description: post?.description,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/${lang}/post/${slug}`,
-      siteName: post?.title,
-      images: [
-        {
-          url: `${process.env.NEXT_PUBLIC_SITE_URL}/${lang}/post/${slug}/opengraph-image`,
-          width: 1200,
-          height: 628,
-        },
-      ],
-      locale: lang,
-      type: "website",
-    },
-    alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/post/${slug}`,
-      languages: {
-        en: `${process.env.NEXT_PUBLIC_SITE_URL}/en/post/${slug}`,
-        de: `${process.env.NEXT_PUBLIC_SITE_URL}/de/post/${slug}`,
-      },
-    },
-  };
-};
+}) => generatePostMetadata({ slug, lang });
 
 const Page = async ({
   params,

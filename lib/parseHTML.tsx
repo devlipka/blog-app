@@ -3,12 +3,12 @@ import parse from "html-react-parser";
 
 interface GetParsedHTMLProps {
   body: string;
-  options?: { replace: (domNode: any) => JSX.Element };
+  options?: { replace?: (domNode: any) => JSX.Element };
 }
 
 export const getParsedHTML = ({ body, options = {} }: GetParsedHTMLProps) => {
   const defaultOptions = {
-    replace: (domNode) => {
+    replace: (domNode: any) => {
       if (domNode.name === "img") {
         const { src, alt } = domNode.attribs;
 

@@ -5,12 +5,15 @@ import { Post } from "@/types/collection";
 import { readItems } from "@directus/sdk";
 import { notFound } from "next/navigation";
 import { getParsedHTML } from "@/lib/parseHTML";
-import { cache } from "react";
-import siteConfig from "@/config/site";
+import { getCategoryData } from "@/services/category.service";
+import { generateCategoryMetadata } from "@/services/seo.service";
 
-export const generateStaticParams = async () => {
+// TODO: fix type
+export const generateStaticParams = async (): Promise<any[]> => {
   try {
     const categories = await directus.request(
+      // TODO: get rid of ts-ignore
+      //@ts-ignore
       readItems("category", {
         filter: {
           slug: {
@@ -38,64 +41,9 @@ export const generateStaticParams = async () => {
     return params?.concat(localisedParams ?? []) || [];
   } catch (error) {
     console.error(error);
-
-    throw new Error(error);
+    return [];
   }
 };
-
-export const getCategoryData = cache(
-  async (categorySlug: string, locale: string) => {
-    try {
-      const category = await directus.request(
-        readItems("category", {
-          filter: {
-            slug: {
-              _eq: categorySlug,
-            },
-          },
-          fields: [
-            "*",
-            "translations.*",
-            "posts.*",
-            "posts.author.id",
-            "posts.author.first_name",
-            "posts.author.last_name",
-            "posts.category.id",
-            "posts.category.title",
-            "posts.translations.*",
-          ],
-        }),
-      );
-      const fetchedCategory = category[0];
-
-      if (locale === "en") {
-        return fetchedCategory;
-      } else {
-        return {
-          ...fetchedCategory,
-          title: fetchedCategory.translations[0].title,
-          description: fetchedCategory.translations[0].description,
-          posts: fetchedCategory.posts.map((post) => {
-            return {
-              ...post,
-              title: post.translations[0].title,
-              description: post.translations[0].description,
-              body: post.translations[0].body,
-              category: {
-                ...post.category,
-                title: fetchedCategory.translations[0].title,
-              },
-            };
-          }),
-        };
-      }
-    } catch (error) {
-      console.error(error);
-
-      throw new Error(error);
-    }
-  },
-);
 
 export const generateMetadata = async ({
   params: { category, lang },
@@ -104,36 +52,7 @@ export const generateMetadata = async ({
     category: string;
     lang: string;
   };
-}) => {
-  const categoryData = await getCategoryData(category, lang);
-
-  return {
-    title: categoryData?.title,
-    description: categoryData?.description,
-    openGraph: {
-      title: categoryData?.title,
-      description: categoryData?.description,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/${lang}/${category}`,
-      siteName: categoryData?.title,
-      images: [
-        {
-          url: `${process.env.NEXT_PUBLIC_SITE_URL}/${lang}/${category}/opengraph-image`,
-          width: 1200,
-          height: 628,
-        },
-      ],
-      locale: lang,
-      type: "website",
-    },
-    alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/${category}`,
-      languages: {
-        en: `${process.env.NEXT_PUBLIC_SITE_URL}/en/${category}`,
-        de: `${process.env.NEXT_PUBLIC_SITE_URL}/de/${category}`,
-      },
-    },
-  };
-};
+}) => generateCategoryMetadata({ category, lang });
 
 const Page = async ({
   params,

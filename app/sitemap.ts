@@ -1,12 +1,13 @@
 import { MetadataRoute } from "next";
-import { getAllPosts } from "@/app/[lang]/page";
 import { directus } from "@/lib/directus";
 import { readItems } from "@directus/sdk";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseURL = process.env.NEXT_PUBLIC_SITE_URL;
+  const baseURL = process.env.NEXT_PUBLIC_SITE_URL || "";
 
   const posts = await directus.request(
+    // TODO: get rid of ts-ignore
+    //@ts-ignore
     readItems("post", {
       fields: ["slug", "date_updated"],
     }),
@@ -30,6 +31,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   });
 
   const categories = await directus.request(
+    // TODO: get rid of ts-ignore
+    //@ts-ignore
     readItems("category", {
       fields: ["slug", "date_updated"],
     }),
